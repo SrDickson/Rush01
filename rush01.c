@@ -3,10 +3,10 @@
 /*                                                        :::      ::::::::   */
 /*   rush01.c                                           :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
-/*   By: jmedina- <jmedina-@student.42malaga.com    +#+  +:+       +#+        */
+/*   By: maxgarci <maxgarci@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/16 10:38:24 by jmedina-          #+#    #+#             */
-/*   Updated: 2023/07/16 13:06:28 by jmedina-         ###   ########.fr       */
+/*   Updated: 2023/07/16 13:31:37 by maxgarci         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -27,8 +27,8 @@ int	check_arg(char *str)
 {
 	int	count;
 
-	count = 0;
-	while (str[count] != '\0')
+	count = -1;
+	while (str[++count] != '\0')
 	{
 		if (count % 2 == 0)
 		{
@@ -38,9 +38,8 @@ int	check_arg(char *str)
 		else
 			if (!(str[count] == ' '))
 				return (0);
-		count += 2;
 	}
-	return (1);
+	return (count == 31);
 }
 
 void	generate(char *str_argumentos, int **matrix)
@@ -54,7 +53,7 @@ void	generate(char *str_argumentos, int **matrix)
 	count = -1;
 	it = 1;
 	z_f_it = 0;
-	while (++count < 16) 
+	while (++count < 16)
 	{
 		if ((count / 4) % 2 == 0)
 			z_f_it = 0;
@@ -93,9 +92,9 @@ int	assign_num(int **matrix, int column, int cnt_dictionary)
 
 	count = 0;
 	div = 1000;
-	if (matrix[0][column] == 1) 
+	if (matrix[0][column] == 1)
 		num_2_assign = g_dic1[cnt_dictionary];
-	else if (matrix[0][column] == 2) 
+	else if (matrix[0][column] == 2)
 		num_2_assign = g_dic2[cnt_dictionary];
 	else if (matrix[0][column] == 3)
 		num_2_assign = g_dic3[cnt_dictionary];
@@ -112,7 +111,7 @@ int	assign_num(int **matrix, int column, int cnt_dictionary)
 	return (count == 6);
 }
 
-int	dictionary_length(int limite)
+int	d_length(int limite)
 {
 	if (limite == 1)
 		return (6);
@@ -122,7 +121,7 @@ int	dictionary_length(int limite)
 		return (6);
 	else if (limite == 4)
 		return (1);
-	else 
+	else
 		return (0);
 }
 
@@ -200,46 +199,48 @@ int	check_rows(int **matrix)
 	return (check);
 }
 
-void	recursive(int **matrix, int column, int *result)
+void	cout_result(int **matrix)
 {
-	int	cnt_dictionary;
-	int	limite_diccionario;
-	int	assign_failure;
+	int	number;
 	int	i;
 	int	j;
 
 	i = 1;
 	j = 1;
+	while (i <= 4)
+	{
+		while (j <= 4)
+		{
+			number = matrix[i][j] + '0';
+			write(1, &(number), 1);
+			write(1, " ", 1);
+			j++;
+		}
+		i++;
+		j = 1;
+		write(1, "\n", 1);
+	}
+}
+
+void	recursive(int **matrix, int column, int *result)
+{
+	int	cnt_dictionary;
+	int	assign_failure;
+
 	cnt_dictionary = -1;
-	limite_diccionario = dictionary_length(matrix[0][column]);
-	while (++cnt_dictionary < limite_diccionario && !(*result))
+	while (++cnt_dictionary < d_length(matrix[0][column]) && !(*result))
 	{
 		assign_failure = assign_num(matrix, column, cnt_dictionary);
 		if ((!assign_failure) && check_column(matrix, column))
 		{
 			if (column != 4)
 				recursive(matrix, column + 1, result);
-			else 
+			else
 				*result = check_rows(matrix);
 		}
 	}
-	if (*result && (column == 4)) 
-	{
-		int	number;
-		while (i <= 4)
-		{
-			while (j <= 4)
-			{
-				number = matrix[i][j] + '0';
-				write(1, &(number), 1);
-				write(1, " ", 1);
-				j++;
-			}
-			i++;
-			j = 1;
-			write(1, "\n", 1);
-		}
-	}
+	if (*result && (column == 4))
+		cout_result(matrix);
 	else if (!(*result) && (column == 1))
 		printf("Error, no hay solución posible");
 }
@@ -268,16 +269,18 @@ void	rush(char *str_argumentos)
 
 int	main(int argc, char *argv[])
 {
-	argv[1] = "4 3 2 1 1 2 2 2 4 3 2 1 1 2 2 2";
 	if (argc != 2)
 	{
-		write(1, "Error: argumento no introducido", 5);
+		write(1, "Error: argumento no introducido", 31);
 		exit(1);
 	}
 	else
 	{
 		if (!check_arg(argv[1]))
-			perror("Error: argumentos inválidos");
+		{
+			write(1, "Error: argumentos inválidos", 27);
+			exit(1);
+		}
 		rush(argv[1]);
 	}
 }
